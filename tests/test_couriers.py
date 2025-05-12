@@ -100,21 +100,20 @@ class TestLoginCourier:
         couriers_methods = CouriersMethods()
         # создание курьера
         couriers_methods.given_register_new_courier(**TC.COURIER_1)
-        try:
-            # попытка авторизации с неверными данными
-            courier_id, login_response = couriers_methods.login_courier(login, password)
-            # проверка статус-код ответа
-            assert login_response.status_code == 404
-            # проверка тела ответа:
-            content = login_response.json()
-            assert content.get("message") == "Учетная запись не найдена"
+        # попытка авторизации с неверными данными
+        courier_id, login_response = couriers_methods.login_courier(login, password)
+        # проверка статус-код
+        assert login_response.status_code == 404
+        # проверка тела ответа
+        content = login_response.json()
+        assert content.get("message") == "Учетная запись не найдена"
 
-        finally:
-            # удаление курьера (используются правильные данные для авторизации)
-            courier_id = couriers_methods.login_courier(
-                TC.COURIER_1['login'],
-                TC.COURIER_1['password']
-            )
+        # удаление тестового курьера
+        courier_id = couriers_methods.login_courier(
+            TC.COURIER_1['login'],
+            TC.COURIER_1['password']
+        )
+        if courier_id and courier_id[0]:
             couriers_methods.delete_courier(courier_id[0])
 
 
@@ -133,21 +132,20 @@ class TestLoginCourier:
         couriers_methods = CouriersMethods()
         # создание курьера
         couriers_methods.given_register_new_courier(**TC.COURIER_1)
-        try:
-            # попытка авторизации с неверными данными
-            courier_id, login_response = couriers_methods.login_courier(login, password)
-            # проверка статус-код ответа
-            assert login_response.status_code == 400
-            # проверка тела ответа:
-            content = login_response.json()
-            assert content.get("message") == "Недостаточно данных для входа"
+        # проверка, что авторизация с отсутствующим паролем или логином вызывает ошибку
+        courier_id, login_response = couriers_methods.login_courier(login, password)
 
-        finally:
-            # удаление курьера (используются правильные данные для авторизации)
-            courier_id = couriers_methods.login_courier(
-                TC.COURIER_1['login'],
-                TC.COURIER_1['password']
-            )
+        # Проверяем статус код и сообщение об ошибке
+        assert login_response.status_code == 400
+        content = login_response.json()
+        assert content.get("message") == "Недостаточно данных для входа"
+
+        # Удаляем тестового курьера
+        courier_id = couriers_methods.login_courier(
+            TC.COURIER_1['login'],
+            TC.COURIER_1['password']
+        )
+        if courier_id and courier_id[0]:
             couriers_methods.delete_courier(courier_id[0])
 
 
