@@ -2,6 +2,8 @@ import allure
 import pytest
 import requests
 
+from data import TC
+from helper import CouriersMethods
 from urls import URL
 
 
@@ -14,3 +16,18 @@ def create_order(order):
     # использовать json
     response = requests.post(URL.CREATE_ORDER, json=order, headers=headers)
     return response
+
+# фикстура создания курьера с определенными данными и удаление его после теста
+@allure.step('метод создает курьера с дананными данными и удаляет его после теста')
+@pytest.fixture
+def registered_courier():
+    couriers_methods = CouriersMethods()
+    couriers_methods.given_register_new_courier(**TC.COURIER_1)
+    yield
+    # После выполнения теста удаляем курьера
+    courier_id = couriers_methods.login_courier(
+        TC.COURIER_1['login'],
+        TC.COURIER_1['password']
+    )
+    if courier_id and courier_id[0]:
+        couriers_methods.delete_courier(courier_id[0])

@@ -23,23 +23,16 @@ class TestCreationCourier:
 
     # тест на невозможность создания двух одинаковых курьеров
     @allure.title('Тест на то, что нельзя создать двух одинаковых курьеров')
-    def test_creating_two_identical_courier(self):
+    def test_creating_two_identical_courier(self, registered_courier):
         # создание экземпляр класса CouriersMethods
         couriers_methods = CouriersMethods()
-        # результат регистрации:
-        couriers_methods.given_register_new_courier(**TC.COURIER_1)
+        # попытка зарегистрировать курьера с уже существующими данными:
         result = couriers_methods.given_register_new_courier(**TC.COURIER_1)
         # проверка статус-код ответа
         assert result['response'].status_code == 409
         # проверка тела ответа:
         content = result['response'].json()
         assert content.get("message") == "Этот логин уже используется. Попробуйте другой."
-        # удаление курьера
-        courier_id = couriers_methods.login_courier(TC.COURIER_1['login'], TC.COURIER_1['password'])
-        if courier_id:
-            couriers_methods.delete_courier(courier_id[0])
-
-
 
 
     @pytest.mark.parametrize(
@@ -69,20 +62,20 @@ class TestLoginCourier:
 
     # успешная авторизация курьера
     @allure.title('Тест на то, что курьер может авторизоваться')
-    def test_login_courier(self):
+    def test_login_courier(self, registered_courier):
         # создание экземпляр класса CouriersMethods
         couriers_methods = CouriersMethods()
-        # создание курьера
-        couriers_methods.given_register_new_courier(**TC.COURIER_1)
         # регистрация курьера
-        courier_id, login_response = couriers_methods.login_courier(TC.COURIER_1['login'], TC.COURIER_1['password'])
+        courier_id, login_response = couriers_methods.login_courier(
+            TC.COURIER_1['login'],
+            TC.COURIER_1['password']
+        )
         # проверка статус-код ответа
         assert login_response.status_code == 200
         # проверка тела ответа:
         assert courier_id is not None
         print(f"Успешный логин! ID курьера: {courier_id}")
-        # удаление курьера
-        couriers_methods.delete_courier(courier_id)
+
 
 
 
@@ -95,11 +88,9 @@ class TestLoginCourier:
         ]
     )
     @allure.title('Тест на выпадение ошибки при авторизации курьера с неверным логином или паролем')
-    def test_login_courier_wrong_data(self, login, password):
+    def test_login_courier_wrong_data(self, login, password, registered_courier):
         # создание экземпляр класса CouriersMethods
         couriers_methods = CouriersMethods()
-        # создание курьера
-        couriers_methods.given_register_new_courier(**TC.COURIER_1)
         # попытка авторизации с неверными данными
         courier_id, login_response = couriers_methods.login_courier(login, password)
         # проверка статус-код
@@ -107,15 +98,6 @@ class TestLoginCourier:
         # проверка тела ответа
         content = login_response.json()
         assert content.get("message") == "Учетная запись не найдена"
-
-        # удаление тестового курьера
-        courier_id = couriers_methods.login_courier(
-            TC.COURIER_1['login'],
-            TC.COURIER_1['password']
-        )
-        if courier_id and courier_id[0]:
-            couriers_methods.delete_courier(courier_id[0])
-
 
 
     # ошибка на авторизацию курьера с отсутствующим логином или паролем
@@ -127,26 +109,17 @@ class TestLoginCourier:
         ]
     )
     @allure.title('Тест на выпадение ошибки при авторизации курьера без логина или пароля')
-    def test_login_courier_without_data(self, login, password):
+    def test_login_courier_without_data(self, login, password, registered_courier):
         # создание экземпляр класса CouriersMethods
         couriers_methods = CouriersMethods()
-        # создание курьера
-        couriers_methods.given_register_new_courier(**TC.COURIER_1)
+
         # проверка, что авторизация с отсутствующим паролем или логином вызывает ошибку
         courier_id, login_response = couriers_methods.login_courier(login, password)
-
         # Проверяем статус код и сообщение об ошибке
         assert login_response.status_code == 400
         content = login_response.json()
         assert content.get("message") == "Недостаточно данных для входа"
 
-        # Удаляем тестового курьера
-        courier_id = couriers_methods.login_courier(
-            TC.COURIER_1['login'],
-            TC.COURIER_1['password']
-        )
-        if courier_id and courier_id[0]:
-            couriers_methods.delete_courier(courier_id[0])
 
 
     # ошибка при авторизации, если курьер не создан
