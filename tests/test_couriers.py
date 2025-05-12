@@ -8,16 +8,15 @@ from helper import CouriersMethods
 
 class TestCreationCourier:
 
-    # тест на успешную регистрацию
-    @allure.title('Тест успешное создание курьера')
-    def test_creating_courier(self):
-        # результат регистрации:
-        with CouriersMethods.register_new_courier_and_return_login_password() as result:
-            # проверка статус-код ответа
-            assert result['response'].status_code == 201
-            # проверка тела ответа:
-            content = result['response'].json()
-            assert content.get("ok") is True
+    # тест на успешную регистрацию рандомного курьера
+    @allure.title('Тест на успешное создание рандомного курьера')
+    def test_creating_courier_success(self, temporary_courier):
+        # рандомный курьер из фикстуры
+        result = temporary_courier
+        # проверяем статус-код
+        assert result["response"].status_code == 201
+        response_body = result["response"].json()
+        assert response_body["ok"] is True
 
 
 
@@ -93,6 +92,7 @@ class TestLoginCourier:
         couriers_methods = CouriersMethods()
         # попытка авторизации с неверными данными
         courier_id, login_response = couriers_methods.login_courier(login, password)
+
         # проверка статус-код
         assert login_response.status_code == 404
         # проверка тела ответа
@@ -127,6 +127,8 @@ class TestLoginCourier:
     def test_login_not_creating_courier(self):
         # создание экземпляр класса CouriersMethods
         couriers_methods = CouriersMethods()
+
+        # попытка зарегистрировать не созданного курьера
         courier_id, login_response = couriers_methods.login_courier(TC.COURIER_1['login'], TC.COURIER_1['password'])
         # проверка статус-код ответа
         assert login_response.status_code == 404

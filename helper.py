@@ -7,58 +7,33 @@ import string
 
 from urls import URL
 
-
 class CouriersMethods:
 
-    # метод регистрации нового курьера возвращает список из логина и пароля
-    # если регистрация не удалась, возвращает пустой список
-    @allure.step('метод создает курьера с случайными логином, паролем, именем. После теста удаляет курьера')
-    @contextmanager
-    def register_new_courier_and_return_login_password():
-        # метод генерирует строку, состоящую только из букв нижнего регистра, в качестве параметра передаём длину строки
-        def generate_random_string(length):
-            letters = string.ascii_lowercase
-            random_string = ''.join(random.choice(letters) for i in range(length))
-            return random_string
-        # создаём список, чтобы метод мог его вернуть
-        login_pass = []
-        # генерируем логин, пароль и имя курьера
-        login = generate_random_string(10)
-        password = generate_random_string(10)
-        first_name = generate_random_string(10)
-        # собираем тело запроса
+    @staticmethod
+    # генерация случайной строки из букв нижнего регистра
+    def generate_random_string(length=10):
+        return ''.join(random.choice(string.ascii_lowercase) for _ in range(length))
+
+    # создать курьера с рандомными данными
+    @allure.step('создать нового курьера')
+    def create_courier(self, login=None, password=None, first_name=None):
+        """создает курьера с указанными или случайными данными"""
         payload = {
             "login": login,
             "password": password,
             "firstName": first_name
         }
-        # отправляем запрос на регистрацию курьера и сохраняем ответ в переменную response
+
         response = requests.post(URL.CREATE_COURIER, data=payload)
-
-        # если регистрация прошла успешно (код ответа 201), добавляем в список логин и пароль курьера
         if response.status_code == 201:
-            login_pass.extend([login, password, first_name])
-            print(f"Успешная регистрация! Логин: {login}, Пароль: {password}, Имя: {first_name}")
-        # возвращаем список
-        yield {'login': login_pass, 'response': response}
+            print(f"Создан курьер: {payload['login']}")
 
-        # после теста удаляем курьера
-        # залогинить курьера, чтобы узнать ID
-        login_date = {
-            "login": login,
-            "password": password
+        return {
+            "login": payload["login"],
+            "password": payload["password"],
+            "first_name": payload["firstName"],
+            "response": response
         }
-        login_response = requests.post(URL.LOGIN_COURIER, data=login_date)
-        if login_response.status_code == 200:
-            courier_id = login_response.json()['id']
-            print(f"Успешный логин! ID курьера: {courier_id}")
-        url_delete = URL.DELETE_COURIER + str(courier_id)
-        # удаляем курьера
-        delete_courier = requests.delete(url_delete, data=str(courier_id))
-        if delete_courier.status_code == 200:
-            print(f"Курьер удален")
-
-
 
 
     # создание курьера с заданными данными
