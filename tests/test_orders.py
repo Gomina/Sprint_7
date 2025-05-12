@@ -21,14 +21,10 @@ class TestCreateOrder:
     @allure.title('Тест на успешное создание заказа')
     def test_create_order(self, order, create_order):
         # проверка статус-кода ответа
-        assert create_order.status_code == 201, (
-            f"Ожидался статус 201, получен {create_order.status_code}. "
-            f"Ответ сервера: {create_order.text}"
-        )
+        assert create_order.status_code == 201
         # проверка тела ответа
         content = create_order.json()
         assert "track" in content, "В ответе отсутствует поле 'track'"
-        print(f"Успешное создание заказа! Номер трека: {content['track']}")
 
 
 class TestListOrders:
@@ -41,4 +37,3 @@ class TestListOrders:
         assert response.status_code == 200
         content = response.json()
         assert "orders" in content
-        print(f"Успешное выведение списка заказов!")

@@ -17,7 +17,6 @@ class CouriersMethods:
     # создать курьера с рандомными данными
     @allure.step('создать нового курьера')
     def create_courier(self, login=None, password=None, first_name=None):
-        """создает курьера с указанными или случайными данными"""
         payload = {
             "login": login,
             "password": password,
@@ -25,8 +24,6 @@ class CouriersMethods:
         }
 
         response = requests.post(URL.CREATE_COURIER, data=payload)
-        if response.status_code == 201:
-            print(f"Создан курьер: {payload['login']}")
 
         return {
             "login": payload["login"],
@@ -37,7 +34,7 @@ class CouriersMethods:
 
 
     # создание курьера с заданными данными
-    @allure.step('метод создает курьера с задаными данными')
+    @allure.step('метод создает курьера с заданными данными')
     def given_register_new_courier(self, login, password, first_name):
         # создаём список, чтобы метод мог его вернуть
         login_pass = []
@@ -61,10 +58,8 @@ class CouriersMethods:
         login_response = requests.post(URL.LOGIN_COURIER, data={'login': login, 'password': password})
         if login_response.status_code == 200:
             courier_id = login_response.json()['id']
-            print(f"Успешный логин! ID курьера: {courier_id}")
             return courier_id, login_response
         else:
-            print(f"Ошибка логина! Статус-код: {login_response.status_code}")
             return None, login_response
 
 
@@ -73,8 +68,5 @@ class CouriersMethods:
     def delete_courier(self, courier_id):
         url_delete = URL.DELETE_COURIER + str(courier_id)
         # удалить курьера
-        delete_courier = requests.delete(url_delete, data=str(courier_id))
-        if delete_courier.status_code == 200:
-            print(f"Курьер удален")
-        else:
-            print(f"Ошибка удаления! Статус-код: {delete_courier.status_code}")
+        requests.delete(url_delete, data=str(courier_id))
+

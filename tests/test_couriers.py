@@ -73,8 +73,6 @@ class TestLoginCourier:
         assert login_response.status_code == 200
         # проверка тела ответа:
         assert courier_id is not None
-        print(f"Успешный логин! ID курьера: {courier_id}")
-
 
 
 
