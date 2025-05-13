@@ -10,14 +10,12 @@ class TestCreationCourier:
 
     # тест на успешную регистрацию рандомного курьера
     @allure.title('Тест на успешное создание рандомного курьера')
-    def test_creating_courier_success(self, temporary_courier):
-        # рандомный курьер из фикстуры
-        result = temporary_courier
-        # проверяем статус-код
+    def test_creating_courier_success(self, courier_data):
+        courier_methods = CouriersMethods()
+        # создать курьера с рандомными данными из фикстуры
+        result = courier_methods.create_courier(**courier_data)
         assert result["response"].status_code == 201
-        response_body = result["response"].json()
-        assert response_body["ok"] is True
-
+        assert result["response"].json()["ok"] is True
 
 
     # тест на невозможность создания двух одинаковых курьеров
